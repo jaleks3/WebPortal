@@ -4,6 +4,8 @@ package com.example.WebPortal.auth;
 import com.example.WebPortal.config.JwtService;
 import com.example.WebPortal.user.Role;
 import com.example.WebPortal.user.UserRepository;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.WebPortal.user.User;
@@ -14,10 +16,12 @@ public class AuthenticationService {
     private final UserRepository repository;
     private final PasswordEncoder encoder;
     private final JwtService jwtService;
-    public AuthenticationService(UserRepository repository, PasswordEncoder encoder, JwtService jwtService) {
+    private final AuthenticationManager authenticationManager;
+    public AuthenticationService(UserRepository repository, PasswordEncoder encoder, JwtService jwtService, AuthenticationManager authenticationManager) {
         this.repository = repository;
         this.encoder = encoder;
         this.jwtService = jwtService;
+        this.authenticationManager = authenticationManager;
     }
 
     public AuthenticationResponse register(RegisterRequest request) {
@@ -39,6 +43,18 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        return null;
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
+
+        User user = repository.findByEmail(request.getEmail()).orElseThrow();
+        String jwtToken = jwtService.generateToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .build();
     }
 }
