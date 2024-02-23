@@ -16,10 +16,71 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue
     private Integer id;
+    private String username;
+    private String email;
+    private String password;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     public Integer getId() {
         return id;
     }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private Integer id;
+        private String username;
+        private String email;
+        private String password;
+        private Role role;
+
+        private Builder() {}
+
+        public Builder id(Integer id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder firstname(String firstname) {
+            this.username = firstname;
+            return this;
+        }
+
+        public Builder lastname(String lastname) {
+            // In this example, assuming 'lastname' corresponds to 'username'
+            this.username = lastname;
+            return this;
+        }
+
+        public Builder email(String email) {
+            this.email = email;
+            return this;
+        }
+
+        public Builder password(String password) {
+            this.password = password;
+            return this;
+        }
+
+        public Builder role(Role role) {
+            this.role = role;
+            return this;
+        }
+
+        public User build() {
+            User user = new User();
+            user.id = this.id;
+            user.username = this.username;
+            user.email = this.email;
+            user.password = this.password;
+            user.role = this.role;
+            return user;
+        }
+    }
+
 
     public User() {
     }
@@ -60,18 +121,11 @@ public class User implements UserDetails {
         return role;
     }
 
-    private String username;
-    private String email;
-    private String password;
 
-
-    @Enumerated(EnumType.STRING)
-    private Role role;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
     }
-
     @Override
     public String getPassword() {
         return null;
